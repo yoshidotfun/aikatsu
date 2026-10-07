@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ff6fae">
+  <title>わたしのアンコールカード</title>
+  <style>
+    :root { color-scheme: light; --pink:#f85f9d; --deep:#c83477; --ink:#4b3040; --paper:#fffafd; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); font-family:"Hiragino Maru Gothic ProN","Yu Gothic",system-ui,sans-serif; background:radial-gradient(circle at 10% 0,#ffe0ef 0 15rem,transparent 30rem),#fff7fb; }
+    button,input { font:inherit; }
+    .shell { width:min(100%,720px); min-height:100vh; margin:auto; background:rgba(255,255,255,.55); }
+    header { position:sticky; z-index:3; top:0; padding:calc(14px + env(safe-area-inset-top)) 16px 12px; background:rgba(255,247,251,.94); backdrop-filter:blur(14px); border-bottom:1px solid #ffd0e4; }
+    h1 { margin:0 0 3px; text-align:center; color:var(--deep); font-size:clamp(1.28rem,5vw,1.7rem); letter-spacing:.04em; }
+    h1::before,h1::after { content:"✦"; margin:.35em; color:#ffadcf; font-size:.7em; }
+    .subtitle { margin:0 0 12px; text-align:center; color:#9a5d79; font-size:.78rem; }
+    .search { position:relative; }
+    .search span { position:absolute; left:15px; top:11px; }
+    #search { width:100%; height:45px; padding:0 16px 0 43px; border:2px solid #ffc3dc; border-radius:999px; outline:none; background:white; color:var(--ink); box-shadow:0 4px 14px #df7ba21c; }
+    #search:focus { border-color:var(--pink); box-shadow:0 0 0 4px #ff8cbc35; }
+    main { padding:14px 14px 80px; }
+    .status { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .count strong { color:var(--deep); font-size:1.2rem; }
+    .total { display:block; margin-top:1px; color:#a16881; font-size:.68rem; }
+    .filters { display:flex; padding:3px; border-radius:999px; background:#ffe2ee; }
+    .filters button { border:0; padding:7px 10px; border-radius:999px; background:transparent; color:#995a76; font-size:.76rem; cursor:pointer; }
+    .filters button.active { background:white; color:var(--deep); box-shadow:0 2px 8px #c35b8425; font-weight:700; }
+    .tip { margin:0 0 12px; color:#a16881; font-size:.75rem; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .card { position:relative; padding:0; overflow:hidden; border:2px solid #eadde3; border-radius:15px; background:#f0ecee; color:inherit; cursor:pointer; box-shadow:0 5px 14px #9c52721c; touch-action:pan-y; -webkit-touch-callout:none; user-select:none; transition:transform .15s,border-color .2s,box-shadow .2s; }
+    .card:active { transform:scale(.97); }
+    .art { position:relative; aspect-ratio:5/7; overflow:hidden; display:grid; place-items:center; filter:grayscale(1); opacity:.47; background:linear-gradient(150deg,#f1e9ed,#d9d2d6); transition:filter .25s,opacity .25s; }
+    .art img { position:absolute; z-index:2; inset:0; width:100%; height:100%; object-fit:cover; pointer-events:none; }
+    .code { position:relative; z-index:1; padding:5px 9px; border-radius:999px; background:#54414bb8; color:white; font-size:.78rem; font-weight:800; letter-spacing:.04em; }
+    .meta { display:flex; justify-content:space-between; align-items:center; padding:9px 10px 10px; background:white; }
+    .rarity { font-size:.7rem; font-weight:700; color:#8c6376; }
+    .mark { display:grid; width:26px; height:26px; place-items:center; border-radius:50%; background:#eee8eb; color:#aaa; font-weight:900; }
+    .card.owned { border-color:#ff76ad; box-shadow:0 7px 20px #e4488845; }
+    .card.owned .art { filter:none; opacity:1; background:linear-gradient(145deg,#ff9cc5,#ffd365 48%,#a5e8f4); }
+    .card.owned .mark { background:var(--pink); color:white; }
+    .qty { position:absolute; z-index:2; top:8px; right:8px; min-width:30px; padding:4px 7px; border-radius:999px; background:#fff; color:var(--deep); box-shadow:0 2px 8px #6a294c44; font-size:.76rem; font-weight:900; }
+    .empty { display:none; grid-column:1/-1; padding:48px 15px; text-align:center; color:#a47289; }
+    dialog { width:min(calc(100% - 34px),360px); border:0; border-radius:22px; padding:22px; color:var(--ink); box-shadow:0 20px 70px #79234455; }
+    dialog::backdrop { background:#4e193266; backdrop-filter:blur(3px); }
+    dialog h2 { margin:0 0 6px; color:var(--deep); font-size:1.2rem; }
+    dialog p { margin:0 0 16px; color:#94627a; font-size:.84rem; }
+    #quantity { width:100%; height:48px; padding:0 12px; border:2px solid #ffc3dc; border-radius:12px; font-size:1.1rem; }
+    .dialog-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+    .dialog-actions button { min-height:44px; border:0; border-radius:12px; cursor:pointer; }
+    .cancel { background:#f1ecee; color:#79596a; }
+    .save { background:var(--pink); color:#fff; font-weight:800; }
+    footer { padding:20px 14px calc(24px + env(safe-area-inset-bottom)); color:#a7758b; text-align:center; font-size:.68rem; }
+    @media (min-width:560px) { .grid { grid-template-columns:repeat(3,1fr); } }
+    @media (prefers-reduced-motion:reduce) { * { transition:none!important; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <h1>わたしのアンコールカード</h1>
+      <p class="subtitle">タップでコレクションをチェック</p>
+      <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="カード番号・レアリティで検索" autocomplete="off"></label>
+    </header>
+    <main>
+      <div class="status">
+        <div class="count"><strong id="ownedCount">0</strong> / 85 種<span class="total">合計 <b id="totalCount">0</b> 枚</span></div>
+        <div class="filters" role="group" aria-label="表示カード">
+          <button class="active" data-filter="all">すべて</button><button data-filter="owned">持ってる</button><button data-filter="missing">未所持</button>
+        </div>
+      </div>
+      <p class="tip">カードを長押しすると枚数を入力できます（PCは右クリック）。</p>
+      <section id="grid" class="grid" aria-live="polite"></section>
+    </main>
+    <footer>非公式の個人向けコレクション管理ツールです。カード画像は権利者の許諾を得て、このツールに同梱した画像を表示しています。画像の権利は各権利者に帰属します。</footer>
+  </div>
+  <dialog id="quantityDialog">
+    <form method="dialog" id="quantityForm">
+      <h2 id="dialogTitle">所持枚数</h2>
+      <p>0にすると未所持に戻ります。</p>
+      <input id="quantity" type="number" inputmode="numeric" min="0" max="99" required aria-label="所持枚数">
+      <div class="dialog-actions"><button class="cancel" type="button">キャンセル</button><button class="save" type="submit">保存する</button></div>
+    </form>
+  </dialog>
+  <script src="app.js"></script>
+</body>
+</html>
